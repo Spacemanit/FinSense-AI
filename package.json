@@ -17,6 +17,7 @@
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
     "mongoose": "^9.1.6",
+    "multer": "^2.0.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.0",

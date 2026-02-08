@@ -4,6 +4,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import connectDB from './config/db.js'
 import authRoutes from './routes/auth.js'
+import uploadRoutes from './routes/upload.js'
 
 // Load environment variables
 dotenv.config()
@@ -21,6 +22,7 @@ connectDB()
 
 // Routes
 app.use('/api/auth', authRoutes)
+app.use('/file/upload', uploadRoutes)
 
 // Start server
 app.listen(PORT, () => {

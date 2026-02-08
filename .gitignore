@@ -19,6 +19,16 @@ dist-ssr
 .env.test.local
 .env.production.local
 
+# Uploaded files
+files/
+*.mp3
+*.wav
+*.m4a
+*.ogg
+*.webm
+*.flac
+*.aac
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

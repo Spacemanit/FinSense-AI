@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import FinSense_Logo from '../assets/FinSense_Logo.png';
 
 function LandingPage() {
   const navigate = useNavigate();
@@ -17,9 +18,7 @@ function LandingPage() {
       {/* Header/Navbar */}
       <nav className="px-6 py-4 flex justify-between items-center border-b border-gray-800">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-            <span className="text-xl font-bold">F</span>
-          </div>
+          <img src={ FinSense_Logo } alt="FinSense AI Logo" className="w-10 h-10" />
           <span className="text-xl font-bold">FinSense AI</span>
         </div>
         <button 

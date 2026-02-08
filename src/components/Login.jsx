@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import FinSense_Logo from '../assets/FinSense_Logo.png';
 
 function Login({ onLogin }) {
   const navigate = useNavigate()
@@ -55,9 +56,7 @@ function Login({ onLogin }) {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-              <span className="text-xl font-bold">F</span>
-            </div>
+            <img src={ FinSense_Logo } alt="FinSense AI Logo" className="w-10 h-10" />
             <span className="text-2xl font-medium">FinSense AI</span>
           </div>
         </div>
