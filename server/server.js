@@ -10,21 +10,22 @@ import uploadRoutes from './routes/upload.js'
 dotenv.config()
 
 const app = express()
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// Connect to MongoDB
-connectDB()
+// Connect to MongoDB before starting server
+connectDB().then(() => {
+    app.use('/api/auth', authRoutes)
+    app.use('/file', uploadRoutes)
 
-// Routes
-app.use('/api/auth', authRoutes)
-app.use('/file/upload', uploadRoutes)
-
-// Start server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`)
+    // Start server
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`)
+    })
+}).catch((error) => {
+    process.exit(1)
 })

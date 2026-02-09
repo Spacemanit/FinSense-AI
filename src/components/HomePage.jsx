@@ -4,9 +4,7 @@ import FinSense_Logo from '../assets/FinSense_Logo.png';
 
 function HomePage({ onLogout }) {
     const navigate = useNavigate();
-    const [dragActive, setDragActive] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
-    const [uploadProgress, setUploadProgress] = useState(0);
     const [error, setError] = useState('');
     const [uploadSuccess, setUploadSuccess] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -14,47 +12,6 @@ function HomePage({ onLogout }) {
     const handleLogout = () => {
         onLogout();
         navigate('/');
-    };
-
-    const handleDrag = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.type === "dragenter" || e.type === "dragover") {
-            setDragActive(true);
-        } else if (e.type === "dragleave") {
-            setDragActive(false);
-        }
-    };
-
-    const handleDrop = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setDragActive(false);
-
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            const file = e.dataTransfer.files[0];
-
-            // Validate file type
-            const audioTypes = ['audio/mpeg', 'audio/wav', 'audio/wave', 'audio/x-wav', 'audio/mp4', 'audio/x-m4a', 'audio/ogg', 'audio/webm', 'audio/flac', 'audio/aac'];
-            const fileExtension = file.name.split('.').pop().toLowerCase();
-            const allowedExtensions = ['mp3', 'wav', 'm4a', 'ogg', 'webm', 'flac', 'aac'];
-
-            if (!audioTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
-                setError('Please select a valid audio file (MP3, WAV, M4A, OGG, WEBM, FLAC, AAC)');
-                return;
-            }
-
-            // Validate file size (100MB max)
-            if (file.size > 100 * 1024 * 1024) {
-                setError('File size must be less than 100MB');
-                return;
-            }
-
-            setError('');
-            setUploadSuccess(false);
-            setSelectedFile(file);
-            setUploadProgress(0);
-        }
     };
 
     const handleFileChange = (e) => {
@@ -80,7 +37,6 @@ function HomePage({ onLogout }) {
             setError('');
             setUploadSuccess(false);
             setSelectedFile(file);
-            setUploadProgress(0);
         }
     };
 
@@ -89,60 +45,29 @@ function HomePage({ onLogout }) {
 
         setError('');
         setUploadSuccess(false);
-        setUploadProgress(0);
         setIsUploading(true);
 
         const formData = new FormData();
         formData.append('audio', selectedFile);
 
         try {
-            const xhr = new XMLHttpRequest();
+            const response = await fetch('http://localhost:5000/file/upload', {
+                method: 'POST',
+                body: formData
+            })
 
-            // Track upload progress
-            xhr.upload.addEventListener('progress', (e) => {
-                if (e.lengthComputable) {
-                    const percentComplete = Math.round((e.loaded / e.total) * 100);
-                    setUploadProgress(percentComplete);
-                }
-            });
+            const data = await response.json();
+            if (response.ok) {
+                setUploadSuccess(true);
+                setSelectedFile(null);
+            } else {
+                setError(data.message || 'Failed to upload file. Please try again.');
+            }
+            setIsUploading(false);
 
-            // Handle completion
-            xhr.addEventListener('load', () => {
-                setIsUploading(false);
-                if (xhr.status === 200) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        setUploadSuccess(true);
-                        setUploadProgress(100);
-                        console.log('Upload successful:', response);
-                    } catch (e) {
-                        setError('Invalid response from server');
-                        setUploadProgress(0);
-                    }
-                } else {
-                    try {
-                        const errorResponse = JSON.parse(xhr.responseText);
-                        setError(errorResponse.message || 'Upload failed');
-                    } catch (e) {
-                        setError('Upload failed: ' + xhr.statusText);
-                    }
-                    setUploadProgress(0);
-                }
-            });
-
-            // Handle errors
-            xhr.addEventListener('error', () => {
-                setIsUploading(false);
-                setError('Network error. Please check if the server is running.');
-                setUploadProgress(0);
-            });
-
-            xhr.open('POST', 'http://localhost:5000/file/upload/upload');
-            xhr.send(formData);
         } catch (err) {
             setIsUploading(false);
             setError('Failed to upload file. Please try again.');
-            setUploadProgress(0);
         }
     };
 
@@ -190,14 +115,7 @@ function HomePage({ onLogout }) {
                     {/* Upload Area */}
                     <div className="mb-8">
                         <div
-                            className={`border-2 border-dashed rounded-xl p-12 text-center transition-all duration-200 ${dragActive
-                                    ? 'border-blue-500 bg-blue-500/10'
-                                    : 'border-gray-700 bg-gray-800/50'
-                                }`}
-                            onDragEnter={handleDrag}
-                            onDragLeave={handleDrag}
-                            onDragOver={handleDrag}
-                            onDrop={handleDrop}
+                            className={`border-2 border-dashed rounded-xl p-12 text-center transition-all duration-200 border-gray-700 bg-gray-800/50`}
                         >
                             <div className="flex flex-col items-center space-y-4">
                                 <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center">
@@ -208,7 +126,7 @@ function HomePage({ onLogout }) {
 
                                 <div>
                                     <p className="text-lg mb-2">
-                                        {dragActive ? 'Drop your file here' : 'Drag and drop your audio file here'}
+                                        Drag and drop your audio file here
                                     </p>
                                     <p className="text-gray-400 text-sm">or</p>
                                 </div>
@@ -265,7 +183,6 @@ function HomePage({ onLogout }) {
                                 <button
                                     onClick={() => {
                                         setSelectedFile(null);
-                                        setUploadProgress(0);
                                         setError('');
                                         setUploadSuccess(false);
                                     }}
@@ -281,8 +198,8 @@ function HomePage({ onLogout }) {
                                 onClick={handleUpload}
                                 disabled={isUploading || uploadSuccess}
                                 className={`w-full py-3 rounded-lg font-semibold transition-colors duration-200 ${isUploading || uploadSuccess
-                                        ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                    : 'bg-blue-600 hover:bg-blue-700 text-white'
                                     }`}
                             >
                                 {uploadSuccess ? '✓ Uploaded Successfully' : isUploading ? (
