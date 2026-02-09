@@ -100,4 +100,81 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
     }
 })
 
+// Get all uploaded files
+router.get('/files', async (req, res) => {
+    try {
+        const files = await FileInfo.find().sort({ createdAt: -1 })
+        
+        const formattedFiles = files.map(file => ({
+            id: file._id,
+            filename: file.keyDetails?.filename || 'Unknown',
+            originalname: file.keyDetails?.originalname || 'Unknown',
+            mimetype: file.keyDetails?.mimetype || 'audio/mpeg',
+            size: file.keyDetails?.size || 0,
+            path: file.fileAddress,
+            uploadDate: file.createdAt,
+            voiceID: file.voiceID,
+            summary: file.summary
+        }))
+
+        res.status(200).json({
+            message: 'Files retrieved successfully',
+            files: formattedFiles,
+            count: formattedFiles.length
+        })
+    } catch (error) {
+        console.error('Error fetching files:', error)
+        res.status(500).json({ message: 'Server error', error: error.message })
+    }
+})
+
+router.delete('/files/:id', async (req, res) => {
+    try {
+        const fileId = req.params.id
+        const fileInfo = await FileInfo.findById(fileId)
+
+        if (!fileInfo) {
+            return res.status(404).json({ message: 'File not found' })
+        }
+        await FileInfo.findByIdAndDelete(fileId)
+
+        fs.unlink(fileInfo.fileAddress, (err) => {
+            if (err) {
+                return res.status(500).json({ message: 'Error deleting file from filesystem', error: err.message })
+            }
+            res.status(200).json({ message: 'File deleted successfully' })
+        })
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message })
+    }
+})
+
+router.get('/files/:id', async (req, res) => {
+    try {
+        const fileId = req.params.id
+        const fileInfo = await FileInfo.findById(fileId)
+
+        if (!fileInfo) {
+            return res.status(404).json({ message: 'File not found' })
+        }
+
+        res.status(200).json({
+            message: 'File details retrieved successfully',
+            file: {
+                id: fileInfo._id,
+                filename: fileInfo.keyDetails?.filename || 'Unknown',
+                originalname: fileInfo.keyDetails?.originalname || 'Unknown',
+                mimetype: fileInfo.keyDetails?.mimetype || 'audio/mpeg',
+                size: fileInfo.keyDetails?.size || 0,
+                path: fileInfo.fileAddress,
+                uploadDate: fileInfo.createdAt,
+                voiceID: fileInfo.voiceID,
+                summary: fileInfo.summary
+            }
+        })
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message })
+    }
+})
+
 export default router
