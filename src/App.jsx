@@ -5,6 +5,7 @@ import HomePage from './components/HomePage'
 import Login from './components/Login'
 import SignUp from './components/SignUp'
 import FileDetails from './components/FileDetails'
+import Dashboard from './components/Dashboard'
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -27,6 +28,16 @@ function App() {
         element={
           isLoggedIn ? (
             <HomePage onLogout={handleLogout} />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } 
+      />
+      <Route 
+        path="/dashboard" 
+        element={
+          isLoggedIn ? (
+            <Dashboard onLogout={handleLogout} />
           ) : (
             <Navigate to="/login" replace />
           )

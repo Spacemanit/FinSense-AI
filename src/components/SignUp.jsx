@@ -73,8 +73,16 @@ function SignUp({ onSignup }) {
     }
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center px-8">
-            <div className="w-full max-w-md">
+        <div className="min-h-screen bg-black text-white flex items-center justify-center px-8 relative overflow-hidden">
+            {/* Abstract Blurred Background */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-20 -left-20 w-96 h-96 bg-fuchsia-500/30 rounded-full blur-3xl"></div>
+                <div className="absolute top-40 right-20 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-32 left-1/4 w-96 h-96 bg-fuchsia-600/25 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-20 right-1/3 w-72 h-72 bg-lime-500/15 rounded-full blur-3xl"></div>
+            </div>
+            
+            <div className="w-full max-w-md relative z-10">
                 {/* Logo */}
                 <div className="flex justify-center mb-8">
                     <div className="flex items-center gap-3">
@@ -106,7 +114,7 @@ function SignUp({ onSignup }) {
                                 name="fullname"
                                 value={formData.fullname}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 transition"
+                                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-fuchsia-500 transition"
                                 placeholder="Enter your full name"
                                 required
                             />
@@ -123,7 +131,7 @@ function SignUp({ onSignup }) {
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 transition"
+                                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-fuchsia-500 transition"
                                 placeholder="Enter your email"
                                 required
                             />
@@ -140,7 +148,7 @@ function SignUp({ onSignup }) {
                                 name="password"
                                 value={formData.password}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 transition"
+                                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-fuchsia-500 transition"
                                 placeholder="Create a password"
                                 required
                             />
@@ -157,7 +165,7 @@ function SignUp({ onSignup }) {
                                 name="confirmPassword"
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
-                                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500 transition"
+                                className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-fuchsia-500 transition"
                                 placeholder="Confirm your password"
                                 required
                             />
@@ -175,7 +183,7 @@ function SignUp({ onSignup }) {
                                 />
                                 <span className="text-sm text-gray-400">
                                     I agree to the{' '}
-                                    <a href="#" className="text-blue-500 hover:text-blue-400">
+                                    <a href="#" className="text-fuchsia-500 hover:text-fuchsia-400">
                                         Terms & Conditions
                                     </a>
                                 </span>
@@ -185,7 +193,7 @@ function SignUp({ onSignup }) {
                         {/* Sign Up Button */}
                         <button
                             type="submit"
-                            className="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-medium transition disabled:bg-gray-700 disabled:cursor-not-allowed"
+                            className="w-full bg-transparent border border-fuchsia-600 hover:bg-fuchsia-700 py-3 rounded-lg font-medium transition disabled:bg-gray-700 disabled:cursor-not-allowed"
                             disabled={!formData.termsAccepted || loading}
                         >
                             {loading ? 'Creating Account...' : 'Sign Up'}
@@ -195,7 +203,7 @@ function SignUp({ onSignup }) {
                     {/* Login Link */}
                     <p className="text-center text-gray-400 mt-6">
                         Already have an account?{' '}
-                        <Link to="/login" className="text-blue-500 hover:text-blue-400">
+                        <Link to="/login" className="text-fuchsia-500 hover:text-fuchsia-400">
                             Log in
                         </Link>
                     </p>

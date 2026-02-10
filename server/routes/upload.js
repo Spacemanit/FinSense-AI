@@ -128,7 +128,7 @@ router.get('/files', async (req, res) => {
     }
 })
 
-router.delete('/files/:id', async (req, res) => {
+router.delete('/files/delete/:id', async (req, res) => {
     try {
         const fileId = req.params.id
         const fileInfo = await FileInfo.findById(fileId)
@@ -143,6 +143,68 @@ router.delete('/files/:id', async (req, res) => {
                 return res.status(500).json({ message: 'Error deleting file from filesystem', error: err.message })
             }
             res.status(200).json({ message: 'File deleted successfully' })
+        })
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message })
+    }
+})
+
+// Get statistics endpoint - MUST BE BEFORE /files/:id route
+router.get('/statistics', async (req, res) => {
+    try {
+        const allFiles = await FileInfo.find()
+        
+        // Calculate statistics
+        const totalCalls = allFiles.length
+        let totalDuration = 0
+        let totalSize = 0
+        let satisfiedCalls = 0
+        let dissatisfiedCalls = 0
+        let fraudsDetected = 0
+
+        allFiles.forEach(file => {
+            // Add size from keyDetails
+            if (file.keyDetails?.size) {
+                totalSize += file.keyDetails.size
+            }
+
+            // Get duration from keyDetails
+            if (file.keyDetails?.duration) {
+                totalDuration += file.keyDetails.duration
+            }
+
+            // Get satisfaction from keyDetails (satisfied, dissatisfied, neutral)
+            if (file.keyDetails?.satisfaction) {
+                const satisfaction = file.keyDetails.satisfaction.toLowerCase()
+                if (satisfaction === 'satisfied' || satisfaction === 'positive' || satisfaction === 'yes') {
+                    satisfiedCalls++
+                } else if (satisfaction === 'dissatisfied' || satisfaction === 'negative' || satisfaction === 'no') {
+                    dissatisfiedCalls++
+                }
+            }
+
+            // Get fraud status from keyDetails
+            if (file.keyDetails?.fraud) {
+                const fraud = file.keyDetails.fraud.toString().toLowerCase()
+                if (fraud === 'yes' || fraud === 'true' || fraud === '1') {
+                    fraudsDetected++
+                }
+            }
+        })
+
+        const averageCallTime = totalCalls > 0 ? Math.floor(totalDuration / totalCalls) : 0
+
+        res.status(200).json({
+            message: 'Statistics retrieved successfully',
+            statistics: {
+                totalCalls,
+                satisfiedCalls,
+                dissatisfiedCalls,
+                averageCallTime,
+                fraudsDetected,
+                totalDuration,
+                totalSize
+            }
         })
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message })
@@ -178,3 +240,13 @@ router.get('/files/:id', async (req, res) => {
 })
 
 export default router
+
+
+
+/*
+key details:
+    amount
+    payment method
+    payment date
+    other data
+*/
