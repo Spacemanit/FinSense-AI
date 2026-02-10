@@ -3,6 +3,7 @@ import multer from 'multer'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
+import { spawn } from 'child_process'
 import FileInfo from '../models/FileInfo.js'
 
 const router = express.Router()
@@ -56,6 +57,61 @@ const upload = multer({
     }
 })
 
+// Function to run Python processing pipeline
+async function runPythonPipeline(fileId, filename) {
+    return new Promise((resolve, reject) => {
+        console.log('\n🔄 Starting Python processing pipeline...')
+        console.log(`   File ID: ${fileId}`)
+        console.log(`   Filename: ${filename}`)
+        
+        // Use the full ML pipeline script
+        const pythonScriptPath = path.join(__dirname, '../getStructuresData.py')
+        const venvPython = path.join(__dirname, '../../venv/bin/python3')
+        
+        // Use venv Python if it exists, otherwise fall back to system python3
+        const pythonCommand = fs.existsSync(venvPython) ? venvPython : 'python3'
+        
+        console.log(`   Using Python: ${pythonCommand}`)
+        console.log(`   Script: ${pythonScriptPath}`)
+        
+        // Spawn Python process with file-id argument
+        const pythonProcess = spawn(pythonCommand, [
+            pythonScriptPath,
+            '--file-id', fileId
+        ])
+        
+        let outputData = ''
+        let errorData = ''
+        
+        pythonProcess.stdout.on('data', (data) => {
+            const output = data.toString()
+            outputData += output
+            console.log(output)
+        })
+        
+        pythonProcess.stderr.on('data', (data) => {
+            const error = data.toString()
+            errorData += error
+            console.error(error)
+        })
+        
+        pythonProcess.on('close', (code) => {
+            if (code === 0) {
+                console.log('✅ Python pipeline completed successfully')
+                resolve({ success: true, output: outputData })
+            } else {
+                console.error(`❌ Python pipeline failed with code ${code}`)
+                reject({ success: false, error: errorData, code })
+            }
+        })
+        
+        pythonProcess.on('error', (error) => {
+            console.error('❌ Failed to start Python process:', error)
+            reject({ success: false, error: error.message })
+        })
+    })
+}
+
 router.post('/upload', upload.single('audio'), async (req, res) => {
     try {
         
@@ -77,6 +133,17 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
         })
 
         const savedFile = await newFileInfo.save()
+
+        // Trigger Python processing pipeline in the background
+        // Don't wait for it to complete before sending response
+        runPythonPipeline(savedFile._id.toString(), req.file.filename)
+            .then(() => {
+                console.log('✅ Background processing completed for file:', req.file.filename)
+            })
+            .catch((error) => {
+                console.error('⚠️ Background processing failed for file:', req.file.filename)
+                console.error('Error:', error)
+            })
 
         res.status(200).json({
             message: 'File uploaded successfully',
